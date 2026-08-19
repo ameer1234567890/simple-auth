@@ -1,5 +1,5 @@
 # Build node app
-FROM node:12-slim AS nodebuild
+FROM --platform=$BUILDPLATFORM node:12-slim AS nodebuild
 WORKDIR /opt/simple-auth
 COPY package*.json ./
 RUN npm ci
@@ -8,7 +8,7 @@ COPY vue vue
 RUN npm run build
 
 # Build go app
-FROM golang:1.15-alpine3.13 AS gobuild
+FROM --platform=$BUILDPLATFORM golang:1.15-alpine3.13 AS gobuild
 
 RUN apk add build-base
 WORKDIR /opt/simple-auth
@@ -22,7 +22,7 @@ ARG buildSha=head
 RUN TAG=${version} COMMIT_SHA=${buildSha} make build
 
 # Final image
-FROM alpine:latest
+FROM --platform=$BUILDPLATFORM alpine:latest
 WORKDIR /opt/simple-auth
 COPY --from=gobuild /opt/simple-auth/bin/simple-auth-server .
 COPY --from=gobuild /opt/simple-auth/bin/simple-auth-cli .
